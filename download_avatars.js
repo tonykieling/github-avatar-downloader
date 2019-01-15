@@ -9,7 +9,14 @@ console.log('Welcome to the GitHub Avatar Downloader!');
 let repoOwnerF = process.argv[2];
 let repoNameF = process.argv[3];
 
+if ((!repoOwnerF) || (!repoNameF)){
+  console.log("Please, especiffy the Owner and the RepoName");
+  console.log("i.e. => node download_avatars.js jquery jquery");
+  return;
+}
+
 function getRepoContributors(repoOwner, repoName, cb) {
+  console.log('starting...');
   var options = {
     url: "https://api.github.com/repos/" + repoOwner + "/" + repoName + "/contributors",
     headers: {
@@ -20,6 +27,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
 
   request(options, function(err, res, body) {
     cb(err, body);
+    console.log('done');
   });
 }
 
@@ -33,20 +41,13 @@ function downloadImageByURL(url, filePath) {
          throw err;
        })
        .on('response', function (response) {
-         console.log('Response Status Code: ', response.statusCode);
-         console.log('Response Status Message: ', response.statusMessage);
-         console.log('Content Type: ', response.headers['content-type']);
        })
        .pipe(fs.createWriteStream('./avatars/' + filePath + '.jpeg'));
 }
 
 
 getRepoContributors(repoOwnerF, repoNameF, function(err, result) {
-  console.log("Errors:", err);
-  console.log("Result:", result);
   let parsedContent = JSON.parse(result);
-  console.log(parsedContent);
-
   parsedContent.forEach(user => {
     downloadImageByURL(user.avatar_url, user.login);
   });
